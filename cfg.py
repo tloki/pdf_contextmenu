@@ -1,0 +1,8 @@
+MENU_NAME = "PDF alati"
+MERGE_NAME = "Spoji PDF datoteke"
+SPLIT_NAME = "Razdjeli PDF datoteku"
+CHOOSE_ONLY_ONE_PDF = "Moguce je odabrati samo jednu datoteku!"
+CHOOSE_PDF = "Datoteka mora biti u PDF formatu!"
+INSERT_PAGE_NUMBER = "Unesi stranicu nakon koje ce PDF biti podijeljen (izmedu {} i {})"
+MUST_BE_NUMBER = "Unos mora biti broj u rasponu {} i {}"
+PDF_MUST_MULTIPAGE = "PDF mora imati vise od jedne stranice"

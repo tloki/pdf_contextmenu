@@ -76,11 +76,35 @@ def prompt_page_number(msg, min_page=0, max_page=100):
     # print("unesen broj:")
     value = values[0]
 
-    if not value.isnumeric() or int(value) not in range(min_page, max_page + 1):
-        warn(MUST_BE_NUMBER.format(min_page, max_page))
+    allowed_chars = [str(e) for e in range(0, 10)]
+    allowed_chars.append(",")
+    allowed_chars.append(" ")
+
+    if len(value) == 0:
+        warn(PAGE_FORMAT_WARNING)
         return None
 
-    value = int(value)
+    for c in value:
+        if not c in allowed_chars:
+            warn(PAGE_FORMAT_WARNING)
+            return None
+
+    while " " in value:
+        value = value.replace(" ", "")
+
+    value = value.split(",")
+
+    for v in value:
+        if not v.isnumeric() or int(v) not in range(min_page, max_page + 1):
+            warn(MUST_BE_NUMBER.format(min_page, max_page))
+            return None
+
+    value = [int(v) for v in value]
+
+    for i in range(1, len(value)):
+        if not value[i] > value[i - 1]:
+            warn(PAGE_FORMAT_WARNING)
+            return None
 
     return value
 
@@ -89,6 +113,34 @@ def warn(msg):
     root = tk.Tk()
     root.withdraw()
     messagebox.showinfo(title=None, message=msg)
+
+
+def split_to_multiple_pdfs(pdf, page_number: list, original_path):
+    pth_root = remove_ext(original_path)
+
+    last_page_number = 1
+
+    for current_page_num in page_number:
+        first_path = pth_root + "_{}_{}.pdf".format(last_page_number, current_page_num)
+
+        output = PdfFileWriter()
+
+        for i in range(last_page_number - 1, current_page_num):
+            output.addPage(pdf.getPage(i))
+
+        with open(first_path, "wb") as output_stream:
+            output.write(output_stream)
+
+        last_page_number = current_page_num + 1
+
+    first_path = pth_root + "_{}_{}.pdf".format(last_page_number, pdf.getNumPages())
+    output = PdfFileWriter()
+    for i in range(last_page_number - 1, pdf.getNumPages()):
+        output.addPage(pdf.getPage(i))
+
+    with open(first_path, "wb") as output_stream:
+        output.write(output_stream)
+
 
 
 def split_to_two_pdfs(pdf, page_number: int, original_path):
@@ -145,12 +197,13 @@ def pdf_split_menu(filenames, params):
             f.close()
             return
 
-        split_to_two_pdfs(pdf, num, file_path)
+        split_to_multiple_pdfs(pdf, num, file_path)
+        # split_to_two_pdfs(pdf, num, file_path)
 
 
-# if os.name != "nt" and __name__ == '__main__':
-#     pdf_split_menu(["/Users/loki/Projects/pdf_contextmenu/example_pdfs/multipage_manual.pdf"], None)
-#     exit(0)
+if os.name != "nt" and __name__ == '__main__':
+    pdf_split_menu(["/Users/loki/Projects/pdf_contextmenu/example_pdfs/multipage_manual.pdf"], None)
+    exit(0)
 
 if __name__ == '__main__':
     from context_menu import menus
